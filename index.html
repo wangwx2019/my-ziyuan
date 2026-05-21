@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>📚 教育资源资料管理系统</title>
+    <style>
+        :root {
+            --bg: #f0f4f8; --card-bg: #ffffff; --primary: #4f6ef7; --primary-hover: #3b54d4;
+            --primary-light: #eef1fe; --accent: #10b981; --danger: #ef4444; --text: #1e293b;
+            --text-secondary: #64748b; --border: #e2e8f0; --shadow: 0 1px 3px rgba(0,0,0,0.08);
+            --radius: 10px; --radius-lg: 14px; --transition: 0.2s;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f0f4f8; color: #1e293b; line-height:1.6; min-height:100vh; }
+        .navbar { background:#fff; border-bottom:1px solid #e2e8f0; padding:0 20px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
+        .navbar-brand { display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.1rem; color:#4f6ef7; }
+        .navbar-brand .icon { width:36px; height:36px; background:linear-gradient(135deg,#4f6ef7,#7c5cfc); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; }
+        .storage-badge { display:flex; align-items:center; gap:4px; background:#ecfdf5; color:#065f46; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:600; margin-left:6px; }
+        .navbar-stats { display:flex; gap:12px; align-items:center; }
+        .navbar-stats span { background:#eef1fe; padding:5px 12px; border-radius:20px; font-weight:600; color:#4f6ef7; font-size:0.78rem; }
+        .app-container { display:flex; max-width:1400px; margin:0 auto; padding:16px; min-height:calc(100vh - 60px); }
+        .sidebar { width:270px; min-width:270px; display:flex; flex-direction:column; gap:12px; position:sticky; top:76px; align-self:flex-start; max-height:calc(100vh - 100px); overflow-y:auto; padding-right:6px; }
+        .filter-card { background:#fff; border-radius:14px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid #f1f5f9; }
+        .filter-card h4 { font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; margin-bottom:8px; font-weight:700; display:flex; align-items:center; gap:6px; }
+        .dot { width:7px; height:7px; border-radius:50%; }
+        .dot-grade{background:#f59e0b;} .dot-subject{background:#10b981;} .dot-brand{background:#8b5cf6;} .dot-year{background:#3b82f6;} .dot-drive{background:#ec4899;}
+        .filter-tags { display:flex; flex-wrap:wrap; gap:5px; }
+        .filter-tag { padding:4px 10px; border-radius:16px; font-size:0.72rem; cursor:pointer; border:1.5px solid #e2e8f0; background:#fafbfc; transition:0.2s; white-space:nowrap; font-weight:500; }
+        .filter-tag:hover { border-color:#4f6ef7; background:#eef1fe; color:#4f6ef7; }
+        .filter-tag.active { background:#4f6ef7; color:#fff; border-color:#4f6ef7; font-weight:600; }
+        .filter-tag .count { font-size:0.68rem; opacity:0.8; margin-left:2px; }
+        .btn-reset { width:100%; padding:8px; border-radius:10px; border:1.5px dashed #e2e8f0; background:transparent; cursor:pointer; font-size:0.78rem; color:#94a3b8; }
+        .btn-reset:hover { border-color:#ef4444; color:#ef4444; background:#fef2f2; }
+        .main-content { flex:1; display:flex; flex-direction:column; gap:12px; margin-left:16px; min-width:0; }
+        .toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .search-box { flex:1; min-width:200px; position:relative; }
+        .search-box input { width:100%; padding:9px 12px 9px 35px; border-radius:25px; border:2px solid #e2e8f0; font-size:0.88rem; background:#fff; }
+        .search-box input:focus { outline:none; border-color:#4f6ef7; box-shadow:0 0 0 3px rgba(79,110,247,0.1); }
+        .search-box .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:0.9rem; color:#94a3b8; }
+        .btn { padding:9px 16px; border-radius:25px; border:none; cursor:pointer; font-size:0.8rem; font-weight:600; transition:0.2s; white-space:nowrap; display:flex; align-items:center; gap:5px; }
+        .btn-primary { background:#4f6ef7; color:#fff; } .btn-primary:hover { background:#3b54d4; }
+        .btn-outline { background:#fff; border:2px solid #e2e8f0; color:#1e293b; } .btn-outline:hover { border-color:#4f6ef7; color:#4f6ef7; }
+        .btn-accent { background:#10b981; color:#fff; } .btn-accent:hover { background:#059669; }
+        .sort-select { padding:8px 32px 8px 12px; border-radius:25px; border:2px solid #e2e8f0; font-size:0.8rem; background:#fff; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+        .active-filters-bar { display:flex; flex-wrap:wrap; gap:5px; align-items:center; font-size:0.75rem; min-height:24px; }
+        .active-filter-chip { background:#eef1fe; color:#4f6ef7; padding:2px 10px; border-radius:14px; font-weight:600; font-size:0.7rem; display:flex; align-items:center; gap:4px; cursor:pointer; }
+        .resource-list { display:flex; flex-direction:column; gap:6px; }
+        .resource-card { background:#fff; border-radius:14px; padding:14px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid #f1f5f9; display:flex; align-items:center; gap:12px; }
+        .card-main { flex:1; min-width:0; }
+        .card-title { font-weight:600; font-size:0.92rem; margin-bottom:4px; }
+        .card-title a { color:#4f6ef7; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:400px; display:inline-block; }
+        .card-meta { display:flex; flex-wrap:wrap; gap:4px; }
+        .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:600; white-space:nowrap; }
+        .badge-grade{background:#fef3c7;color:#92400e;} .badge-subject{background:#d1fae5;color:#065f46;} .badge-brand{background:#ede9fe;color:#5b21b6;} .badge-year{background:#dbeafe;color:#1e40af;} .badge-drive{background:#fce7f3;color:#9d174d;}
+        .badge-knowledge { background:#fff7ed; color:#9a3412; position:relative; display:inline-flex; align-items:center; gap:2px; }
+        .badge-knowledge .kw-close { cursor:pointer; font-weight:bold; font-size:0.9rem; line-height:1; margin-left:2px; display:none; }
+        .badge-knowledge:hover .kw-close { display:inline; }
+        @media (hover: none) { .badge-knowledge .kw-close { display:inline; } }
+        .card-actions { display:flex; gap:4px; }
+        .card-actions button { padding:5px 9px; border-radius:14px; border:1px solid #e2e8f0; background:#fafbfc; cursor:pointer; font-size:0.7rem; }
+        .btn-edit{color:#f59e0b;border-color:#fde68a;background:#fffbeb;} .btn-copy{color:#3b82f6;border-color:#bfdbfe;background:#eff6ff;} .btn-delete{color:#ef4444;border-color:#fecaca;background:#fef2f2;} .btn-ai{color:#8b5cf6;border-color:#ddd6fe;background:#f5f3ff;}
+        .empty-state { text-align:center; padding:50px; color:#94a3b8; }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.5); z-index:200; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); animation:fadeIn 0.2s; }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        .modal { background:#fff; border-radius:18px; padding:24px; max-width:650px; width:90%; max-height:85vh; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.1); animation:slideUp 0.25s; }
+        @keyframes slideUp { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+        .confirm-modal { max-width:380px; text-align:center; }
+        .confirm-icon { font-size:2.5rem; margin-bottom:10px; }
+        .toast { position:fixed; bottom:24px; right:24px; background:#1e293b; color:#fff; padding:10px 18px; border-radius:25px; font-size:0.82rem; z-index:300; animation:slideUp 0.3s; }
+        .toast.success{background:#059669;} .toast.error{background:#dc2626;}
+        .tag-editor { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+        .tag-item { display:inline-flex; align-items:center; gap:4px; background:#fff7ed; padding:2px 6px 2px 10px; border-radius:14px; font-size:0.72rem; border:1px solid #fed7aa; }
+        .tag-item .tag-close { cursor:pointer; font-weight:bold; font-size:1rem; line-height:1; color:#9a3412; }
+        .modal-actions-row { display: flex; justify-content: center; flex-wrap: nowrap; gap: 10px; margin-top: 18px; }
+        @media (max-width: 500px) { .modal-actions-row .btn { padding: 6px 12px; font-size: 0.72rem; } }
+        @media (max-width:900px) {
+            .app-container { flex-direction:column; }
+            .sidebar { width:100%; position:static; flex-direction:row; flex-wrap:wrap; }
+            .filter-card { flex:1 1 140px; }
+            .main-content { margin-left:0; }
+            .resource-card { flex-direction:column; align-items:flex-start; }
+            .toolbar { flex-direction:column; }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-brand"><div class="icon">📚</div>教育资源管理<span class="storage-badge">💾 本地存储</span></div>
+    <div class="navbar-stats">
+        <span id="statTotal">📦 0</span>
+        <span id="statFiltered">🔍 0</span>
+        <button class="btn btn-sm btn-outline" id="btnSaveToFile" onclick="saveToFile()" style="display:none;padding:5px 12px;">💾 保存到文件</button>
+    </div>
+</nav>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">
+        <div class="filter-card"><h4><span class="dot dot-grade"></span>年级</h4><div class="filter-tags" id="filterGrades"></div></div>
+        <div class="filter-card"><h4><span class="dot dot-subject"></span>科目</h4><div class="filter-tags" id="filterSubjects"></div></div>
+        <div class="filter-card"><h4><span class="dot dot-brand"></span>版本</h4><div class="filter-tags" id="filterBrands"></div></div>
+        <div class="filter-card"><h4><span class="dot dot-year"></span>年份</h4><div class="filter-tags" id="filterYears"></div></div>
+        <div class="filter-card"><h4><span class="dot dot-drive"></span>网盘</h4><div class="filter-tags" id="filterDrives"></div></div>
+        <button class="btn-reset" onclick="resetAllFilters()">🔄 重置筛选</button>
+    </aside>
+
+    <main class="main-content">
+        <div class="toolbar">
+            <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="searchInput" placeholder="搜索名称、年级、科目..." oninput="onSearch()"></div>
+            <select class="sort-select" id="sortSelect" onchange="onSort()">
+                <option value="newest">🕐 最新</option><option value="oldest">📅 最早</option><option value="name-asc">🔤 A-Z</option><option value="name-desc">🔤 Z-A</option>
+            </select>
+            <button class="btn btn-primary" onclick="openBatchImportModal()">📥 批量导入</button>
+            <button class="btn btn-accent" onclick="openAddSingleModal()">➕ 添加</button>
+            <button class="btn btn-outline" onclick="runAIOnAll()">🤖 AI全量识别</button>
+        </div>
+        <div class="active-filters-bar" id="activeFiltersBar"></div>
+        <div class="resource-list" id="resourceList"></div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="batchImportModal" style="display:none;"><div class="modal"><h3>📥 批量导入资料</h3><textarea id="batchImportText" style="width:100%;height:160px;border-radius:12px;border:2px solid #e2e8f0;padding:12px;" placeholder="支持格式：名称|链接 或 一行名称一行链接 或「名称」+链接：..."></textarea><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeBatchImportModal()">取消</button><button class="btn btn-primary" onclick="executeBatchImport()">✅ 导入并保存</button></div></div></div>
+<div class="modal-overlay" id="addSingleModal" style="display:none;"><div class="modal"><h3>➕ 添加资料</h3><input type="text" id="singleName" placeholder="资料名称" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><input type="text" id="singleLink" placeholder="链接（可选）" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;"><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeAddSingleModal()">取消</button><button class="btn btn-primary" onclick="addSingleResource()">✅ 添加</button></div></div></div>
+<div class="modal-overlay" id="editModal" style="display:none;"><div class="modal"><h3>✏️ 编辑资料</h3><input type="hidden" id="editId"><input type="text" id="editName" placeholder="资料名称" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><input type="text" id="editLink" placeholder="链接" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="editGrade" placeholder="年级" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editSubject" placeholder="科目" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editBrand" placeholder="版本" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editYear" placeholder="年份" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"></div><div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:#64748b;font-weight:600;">🏷️ 标签管理</label><div id="editTagsContainer" class="tag-editor"></div><div style="display:flex;gap:6px;"><input type="text" id="newTagInput" placeholder="输入标签，空格可添加多个" style="flex:1;padding:6px 10px;border-radius:20px;border:1.5px solid #e2e8f0;font-size:0.75rem;"><button class="btn btn-sm btn-outline" onclick="addEditTags()" style="padding:4px 12px;">➕ 添加</button></div></div><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeEditModal()">取消</button><button class="btn btn-outline" onclick="autoFillEditFields()">🤖 AI重新识别填充</button><button class="btn btn-primary" onclick="saveEditResource()">💾 保存修改</button></div></div></div>
+<div class="modal-overlay" id="confirmModal" style="display:none;"><div class="modal confirm-modal"><div class="confirm-icon" id="confirmIcon">⚠️</div><p id="confirmMessage"></p><div class="modal-actions-row"><button class="btn btn-outline" id="confirmCancelBtn">取消</button><button class="btn btn-primary" id="confirmOkBtn">确认</button></div></div></div>
+<div id="toastContainer"></div>
+<script>
+(function() {
+    const STORAGE_KEY = 'edu_resources_db';
+    let resources = [];
+    let activeFilters = { grade: null, subject: null, brand: null, year: null, driveType: null };
+    let currentSort = 'newest';
+    let searchQuery = '';
+    let currentEditKeywords = [];
+    let fileHandle = null; // 用于保存到文件
+
+    const DEFAULT_RESOURCES = [
+        { id:'1', name:'2026《通成学典•小学英语阅读组合训练》（1-6年级下）（英语）', link:'https://pan.quark.cn/s/bfff662a57fd', grade:'1-6年级', subject:'英语', brand:'通成学典', year:'2026年', driveType:'夸克网盘', keywords:['阅读','训练','下册'], createdAt:Date.now()-1000 },
+        { id:'2', name:'2026新外研三年级下册听力能手语文数学英语', link:'https://pan.quark.cn/s/bc92f684d182', grade:'三年级', subject:'语文', brand:'外研版', year:'2026年', driveType:'夸克网盘', keywords:['数学','英语','听力','能手','下册'], createdAt:Date.now()-2000 },
+        { id:'3', name:'2-6年级数学青岛版口算练习26秋', link:'', grade:'2-6年级', subject:'数学', brand:'青岛版', year:'2026年秋季', driveType:'未知', keywords:['口算','练习'], createdAt:Date.now()-3000 },
+    ];
+
+    // ==================== 数据加载（优先 data.json） ====================
+    async function loadData() {
+        try {
+            const response = await fetch('data.json');
+            if (response.ok) {
+                const data = await response.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    resources = data.map(r => ({ ...r, createdAt: r.createdAt || Date.now() }));
+                    console.log('✅ 已从 data.json 加载 ' + resources.length + ' 条资料');
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(resources));
+                    return;
+                }
+            }
+        } catch (e) { console.log('📁 未找到 data.json，从 localStorage 加载'); }
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            try { resources = JSON.parse(raw); if (!Array.isArray(resources) || resources.length===0) resources = [...DEFAULT_RESOURCES]; }
+            catch(e) { resources = [...DEFAULT_RESOURCES]; }
+        } else { resources = [...DEFAULT_RESOURCES]; }
+        saveToLocalStorage();
+    }
+
+    function saveToLocalStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(resources));
+    }
+
+    // ==================== 保存到 data.json 文件 ====================
+    async function saveToFile() {
+        const json = JSON.stringify(resources, null, 2);
+        try {
+            if (fileHandle) {
+                const writable = await fileHandle.createWritable();
+                await writable.write(json);
+                await writable.close();
+                showToast('✅ data.json 已更新', 'success');
+                return;
+            }
+            const handle = await window.showSaveFilePicker({
+                suggestedName: 'data.json',
+                types: [{ description: 'JSON文件', accept: { 'application/json': ['.json'] } }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(json);
+            await writable.close();
+            fileHandle = handle;
+            showToast('✅ data.json 已更新（坚果云将自动同步）', 'success');
+        } catch (e) {
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'data.json';
+            a.click(); URL.revokeObjectURL(url);
+            showToast('💾 已下载 data.json，请手动放入同步文件夹', 'success');
+        }
+    }
+    window.saveToFile = saveToFile;
+
+    function generateId() { return 'res_'+Date.now()+'_'+Math.random().toString(36).substr(2,6); }
+
+    // ==================== 年级识别、科目提取、版本识别、年份识别（完整保留） ====================
+    const GRADE_NAMES = ['一年级','二年级','三年级','四年级','五年级','六年级','初一','初二','初三','高一','高二','高三'];
+    const DIGIT_TO_GRADE = { '1':'一年级','2':'二年级','3':'三年级','4':'四年级','5':'五年级','6':'六年级','7':'初一','8':'初二','9':'初三','10':'高一','11':'高二','12':'高三' };
+    function getGradeRangeCovered(gradeStr) {
+        if (!gradeStr) return [];
+        if (gradeStr === '小学') return GRADE_NAMES.slice(0,6);
+        const rangeMatch = gradeStr.match(/^(\d+)-(\d+)年级$/);
+        if (rangeMatch) {
+            const s = parseInt(rangeMatch[1]), e = parseInt(rangeMatch[2]);
+            if (s>=1 && e<=12 && s<=e) { const r=[]; for(let i=s;i<=e;i++) r.push(DIGIT_TO_GRADE[i]||`${i}年级`); return r; }
+        }
+        const parts = gradeStr.split(',').map(s=>s.trim()).filter(s=>s);
+        return parts.map(p=>{ const m=p.match(/^(\d+)年级$/); return m?DIGIT_TO_GRADE[m[1]]||p:p; });
+    }
+    function parseGradeRange(name) {
+        const idx = name.indexOf('年级');
+        if (idx===-1) return null;
+        const before = name.substring(0, idx);
+        const m = before.match(/(\d+)\s*[-~至到]\s*(\d+)\s*$/);
+        if (m && parseInt(m[1])<parseInt(m[2]) && parseInt(m[1])>=1 && parseInt(m[2])<=12) return `${m[1]}-${m[2]}年级`;
+        return null;
+    }
+    function parseGradeFromNumberSequence(name) {
+        const idx = name.indexOf('年级');
+        if (idx===-1) return null;
+        let numStr=''; let i=idx-1;
+        while(i>=0&&/[\d\s]/.test(name[i])){ numStr=name[i]+numStr; i--; }
+        const digits = numStr.replace(/\s/g,'');
+        if (!digits) return null;
+        const arr = digits.split('').map(Number).filter(d=>d>=1&&d<=12);
+        if (!arr.length) return null;
+        const sorted = [...arr].sort((a,b)=>a-b);
+        const continuous = sorted.every((v,i,a)=>i===0||v===a[i-1]+1);
+        if (continuous && arr.length>1) return `${sorted[0]}-${sorted[sorted.length-1]}年级`;
+        return arr.map(d=>`${d}年级`).join(',');
+    }
+    function extractGradeRangeWithoutNianji(name) {
+        if (name.includes('小学')) return '小学';
+        const m = name.match(/(\d+)\s*[-~至到]\s*(\d+)\s*(?:年级)/);
+        if (m) { const s=parseInt(m[1]),e=parseInt(m[2]); if(s>=1&&e<=12&&s<e) return `${s}-${e}年级`; }
+        const patterns = [
+            {regex:/高三|高中三年级/, grade:'高三'},{regex:/高二|高中二年级/, grade:'高二'},{regex:/高一|高中一年级/, grade:'高一'},
+            {regex:/初三|初中三年级|九年级/, grade:'初三'},{regex:/初二|初中二年级|八年级/, grade:'初二'},{regex:/初一|初中一年级|七年级/, grade:'初一'},
+            {regex:/六年级/, grade:'六年级'},{regex:/五年级/, grade:'五年级'},{regex:/四年级/, grade:'四年级'},
+            {regex:/三年级/, grade:'三年级'},{regex:/二年级/, grade:'二年级'},{regex:/一年级/, grade:'一年级'},
+            {regex:/小升初/, grade:'小升初'},{regex:/中考/, grade:'中考'},{regex:/高考/, grade:'高考'},
+        ];
+        for (let p of patterns) if (p.regex.test(name)) return p.grade;
+        return '';
+    }
+    function extractGradeRange(name) {
+        const r = parseGradeRange(name); if (r) return r;
+        const s = parseGradeFromNumberSequence(name); if (s) return s;
+        return extractGradeRangeWithoutNianji(name);
+    }
+
+    const FULL_SUBJECTS = ['语文','数学','英语','物理','化学','生物','历史','地理','政治','科学','视频','网课','课件','试卷'];
+    const SUBJECT_ABBR_MAP = { '语':'语文', '数':'数学', '英':'英语', '物':'物理', '化':'化学', '生':'生物', '史':'历史', '地':'地理', '政':'政治', '科':'科学' };
+    function extractSubjects(name) {
+        const found = new Set();
+        for (let s of FULL_SUBJECTS) if (name.includes(s)) found.add(s);
+        for (let [abbr, full] of Object.entries(SUBJECT_ABBR_MAP)) {
+            if (found.has(full)) continue;
+            let idx = name.indexOf(abbr);
+            while (idx !== -1) {
+                let isPart = false;
+                for (let f of FULL_SUBJECTS) { const fi=name.indexOf(f); if(fi!==-1&&idx>=fi&&idx<fi+f.length){isPart=true;break;} }
+                if (!isPart) { found.add(full); break; }
+                idx = name.indexOf(abbr, idx+1);
+            }
+        }
+        return [...found];
+    }
+
+    const BRAND_DICT = ['人教版','人教','北师大版','北师大','苏教版','苏教','沪教版','沪教','浙教版','浙教','部编版','外研版','外研','译林版','译林','北京版','北京','通成学典','拔尖','课时作业本','湘教版','鲁教版','冀教版','鄂教版','粤教版','华师大版','青岛版','青岛'];
+    function extractBrand(name) {
+        const sorted = [...BRAND_DICT].sort((a,b)=>b.length-a.length);
+        for (let b of sorted) if (name.includes(b)) return b;
+        return '';
+    }
+
+    function extractYear(name) {
+        const seasonMap = { '秋':'秋季', '秋季':'秋季', '春':'春季', '春季':'春季' };
+        const regex = /(20\d{2}|2\d)\s*年?\s*(秋|秋季|春|春季)?/g;
+        let match;
+        while ((match = regex.exec(name)) !== null) {
+            let num = match[1], sea = match[2] || '';
+            const afterNum = name.substring(match.index + match[0].length);
+            if (/^\s*年级/.test(afterNum)) continue;
+            if (num.length === 2) num = '20' + num;
+            return num + '年' + (seasonMap[sea] || '');
+        }
+        return '';
+    }
+
+    const KNOWLEDGE_DICT = ['古诗','作文','默写','计算','应用题','阅读理解','语法','词汇','听力','实验','真题','模拟','冲刺','复习','预习','课堂笔记','教案','课件','练习册','月考','期中','期末','小升初','中考','高考','新改版','电子课本','能手','特训','大试卷'];
+    const EXCLUDE_FILE_TYPES = ['doc','docx','xls','xlsx','ppt','pptx','pdf','txt','rar','zip','7z','mp4','mp3','avi','mkv','jpg','png','gif'];
+
+    function simplifyKeywords(keywords) {
+        const sorted = [...keywords].sort((a,b) => a.length - b.length);
+        const result = [];
+        for (const w of sorted) {
+            if (!result.some(existing => w.includes(existing))) result.push(w);
+        }
+        return result;
+    }
+
+    function aiAnalyzeResource(name, link) {
+        name = name.replace(/——链接|链接：/g, '');
+        const grade = extractGradeRange(name);
+        const subjects = extractSubjects(name);
+        const subjectForFilter = subjects.length > 0 ? subjects[0] : '';
+        const brand = extractBrand(name);
+        const year = extractYear(name);
+        const driveType = link ? (()=>{
+            const l = link.toLowerCase();
+            if (l.includes('pan.baidu')) return '百度网盘';
+            if (l.includes('alipan')||l.includes('aliyundrive')) return '阿里云盘';
+            if (l.includes('quark.cn')) return '夸克网盘';
+            if (l.includes('123pan')) return '123云盘';
+            return '其他网盘';
+        })() : '未知';
+
+        let knowledgeTags = [];
+        for (let k of KNOWLEDGE_DICT) { if (name.includes(k) && k !== grade) knowledgeTags.push(k); }
+
+        let cleanName = name.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{200C}]/gu, ' ');
+        cleanName = cleanName.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ');
+        let remaining = cleanName;
+        if (grade) { remaining = remaining.replace(grade, ' '); const d = grade.match(/\d+/g); if(d) d.forEach(n => remaining = remaining.replace(new RegExp('\\b'+n+'\\b','g'), ' ')); }
+        subjects.forEach(s => remaining = remaining.replace(s, ' '));
+        if (brand) remaining = remaining.replace(brand, ' ');
+        if (year) { remaining = remaining.replace(year, ' '); const y = year.match(/\d+/g); if (y) y.forEach(n => remaining = remaining.replace(new RegExp('\\b'+n+'\\b','g'), ' ')); remaining = remaining.replace(/秋|春/g, ' '); }
+        knowledgeTags.forEach(k => remaining = remaining.replace(k, ' '));
+
+        const words = remaining.split(/\s+/).filter(w => w.length >= 2 && w.length <= 5 && !/^[a-zA-Z0-9]$/.test(w));
+        let extraTags = [...new Set(words)].slice(0, 5);
+        extraTags = extraTags.filter(w => !/^\d{2,4}$/.test(w) && !EXCLUDE_FILE_TYPES.includes(w.toLowerCase()));
+
+        let allKeywords = [...subjects, ...knowledgeTags, ...extraTags].filter(w => w);
+        if (name.includes('上册')) allKeywords.push('上册');
+        if (name.includes('下册')) allKeywords.push('下册');
+        const fieldValues = [grade, ...subjects, brand, year].filter(Boolean);
+        allKeywords = allKeywords.filter(kw => !fieldValues.includes(kw));
+        let uniqueKw = [...new Set(allKeywords)].slice(0, 10);
+        uniqueKw = simplifyKeywords(uniqueKw);
+        return { grade, subject: subjectForFilter, brand, year, driveType, keywords: uniqueKw.slice(0, 8) };
+    }
+
+    // ==================== 第 3 段结束 ====================
+    // ==================== 筛选与排序 ====================
+    function getFilteredAndSortedResources() {
+        let filtered = [...resources];
+        if (activeFilters.grade) filtered = filtered.filter(r => getGradeRangeCovered(r.grade).includes(activeFilters.grade));
+        if (activeFilters.subject) filtered = filtered.filter(r => r.subject === activeFilters.subject);
+        if (activeFilters.brand) filtered = filtered.filter(r => r.brand === activeFilters.brand);
+        if (activeFilters.year) filtered = filtered.filter(r => r.year === activeFilters.year);
+        if (activeFilters.driveType) filtered = filtered.filter(r => r.driveType === activeFilters.driveType);
+        if (searchQuery.trim()) {
+            const q = searchQuery.trim().toLowerCase();
+            filtered = filtered.filter(r => {
+                if (r.name.toLowerCase().includes(q) || (r.link&&r.link.toLowerCase().includes(q)) || r.keywords.some(k=>k.toLowerCase().includes(q))) return true;
+                if (r.grade) {
+                    const covered = getGradeRangeCovered(r.grade);
+                    if (covered.some(g => g.includes(q) || g.replace(/[一二三四五六七八九十]/g, m => ({'一':'1','二':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9','十':'10'}[m]||m)).includes(q))) return true;
+                }
+                return (r.subject&&r.subject.includes(q)) || (r.brand&&r.brand.includes(q));
+            });
+        }
+        switch(currentSort) {
+            case 'newest': filtered.sort((a,b)=>b.createdAt-a.createdAt); break;
+            case 'oldest': filtered.sort((a,b)=>a.createdAt-b.createdAt); break;
+            case 'name-asc': filtered.sort((a,b)=>a.name.localeCompare(b.name,'zh')); break;
+            case 'name-desc': filtered.sort((a,b)=>b.name.localeCompare(a.name,'zh')); break;
+        }
+        return filtered;
+    }
+
+    function renderAll() { renderFilterTags(); renderResourceList(); renderActiveFiltersBar(); updateStats(); }
+    function renderFilterTags() {
+        const counts = { grades:{}, subjects:{}, brands:{}, years:{}, drives:{} };
+        resources.forEach(r=>{
+            getGradeRangeCovered(r.grade).forEach(g => counts.grades[g] = (counts.grades[g]||0)+1);
+            if(r.subject) counts.subjects[r.subject] = (counts.subjects[r.subject]||0)+1;
+            if(r.brand) counts.brands[r.brand] = (counts.brands[r.brand]||0)+1;
+            if(r.year) counts.years[r.year] = (counts.years[r.year]||0)+1;
+            if(r.driveType) counts.drives[r.driveType] = (counts.drives[r.driveType]||0)+1;
+        });
+        renderTagGroup('filterGrades', counts.grades, activeFilters.grade, 'grade');
+        renderTagGroup('filterSubjects', counts.subjects, activeFilters.subject, 'subject');
+        renderTagGroup('filterBrands', counts.brands, activeFilters.brand, 'brand');
+        renderTagGroup('filterYears', counts.years, activeFilters.year, 'year');
+        renderTagGroup('filterDrives', counts.drives, activeFilters.driveType, 'driveType');
+    }
+    function renderTagGroup(id, map, activeVal, key) {
+        const container = document.getElementById(id);
+        let html = `<span class="filter-tag ${!activeVal?'active':''}" onclick="setFilter('${key}',null)">全部</span>`;
+        Object.entries(map).sort((a,b)=>b[1]-a[1]).forEach(([val,cnt])=>{
+            html += `<span class="filter-tag ${activeVal===val?'active':''}" onclick="setFilter('${key}','${val.replace(/'/g,"\\'")}')">${val}<span class="count">(${cnt})</span></span>`;
+        });
+        container.innerHTML = html;
+    }
+    function renderActiveFiltersBar() {
+        const bar = document.getElementById('activeFiltersBar'), chips = [];
+        if(activeFilters.grade) chips.push({key:'grade',label:'年级:'+activeFilters.grade});
+        if(activeFilters.subject) chips.push({key:'subject',label:'科目:'+activeFilters.subject});
+        if(activeFilters.brand) chips.push({key:'brand',label:'版本:'+activeFilters.brand});
+        if(activeFilters.year) chips.push({key:'year',label:'年份:'+activeFilters.year});
+        if(activeFilters.driveType) chips.push({key:'driveType',label:'网盘:'+activeFilters.driveType});
+        bar.innerHTML = chips.length ? chips.map(c=>`<span class="active-filter-chip" onclick="setFilter('${c.key}',null)">${c.label} ×</span>`).join('') : (searchQuery?`🔍 "${searchQuery}"`:'📌 点击标签筛选');
+    }
+    window.deleteKeyword = function(resourceId, keyword) {
+        const r = resources.find(r => r.id === resourceId);
+        if (!r) return;
+        r.keywords = r.keywords.filter(k => k !== keyword);
+        saveToLocalStorage();
+        renderAll();
+        showToast(`已删除标签“${keyword}”`, 'success');
+    };
+    function renderResourceList() {
+        const list = document.getElementById('resourceList'), filtered = getFilteredAndSortedResources();
+        if(!filtered.length) { list.innerHTML = `<div class="empty-state"><p>📭 暂无匹配资料</p></div>`; return; }
+        list.innerHTML = filtered.map(r => {
+            const gradeBadge = r.grade ? `<span class="badge badge-grade">🎓 ${r.grade}</span>` : '';
+            const kwBadges = r.keywords.map(k => `<span class="badge badge-knowledge" data-kw="${k}">📌${k}<span class="kw-close" onclick="event.stopPropagation(); deleteKeyword('${r.id}', '${k.replace(/'/g,"\\'")}')">×</span></span>`).join('');
+            return `<div class="resource-card">
+                <div class="card-main">
+                    <div class="card-title">${r.link?`<a href="${r.link}" target="_blank">${escapeHtml(r.name)}</a>`:escapeHtml(r.name)}</div>
+                    <div class="card-meta">${gradeBadge}${r.subject?`<span class="badge badge-subject">📖${r.subject}</span>`:''}${r.brand?`<span class="badge badge-brand">🏷️${r.brand}</span>`:''}${r.year?`<span class="badge badge-year">📅${r.year}</span>`:''}${r.driveType?`<span class="badge badge-drive">☁️${r.driveType}</span>`:''}${kwBadges}</div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-edit" onclick="openEditModal('${r.id}')">✏️</button>
+                    ${r.link?`<button class="btn-copy" onclick="copyLink('${r.link.replace(/'/g,"\\'")}')">📋</button>`:''}
+                    <button class="btn-ai" onclick="reAnalyzeSingle('${r.id}')">🤖</button>
+                    <button class="btn-delete" onclick="deleteResource('${r.id}')">🗑️</button>
+                </div></div>`;
+        }).join('');
+    }
+    function updateStats() {
+        document.getElementById('statTotal').textContent = `📦 ${resources.length}`;
+        document.getElementById('statFiltered').textContent = `🔍 ${getFilteredAndSortedResources().length}`;
+    }
+    function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+    window.setFilter = (key,val)=>{ activeFilters[key] = val || null; renderAll(); };
+    window.resetAllFilters = ()=>{ activeFilters={grade:null,subject:null,brand:null,year:null,driveType:null}; searchQuery=''; document.getElementById('searchInput').value=''; document.getElementById('sortSelect').value='newest'; currentSort='newest'; renderAll(); };
+    window.onSearch = ()=>{ searchQuery = document.getElementById('searchInput').value; renderAll(); };
+    window.onSort = ()=>{ currentSort = document.getElementById('sortSelect').value; renderAll(); };
+
+    // ==================== 编辑功能 ====================
+    function renderEditTags() {
+        const container = document.getElementById('editTagsContainer');
+        container.innerHTML = currentEditKeywords.map((tag, idx) => `<span class="tag-item">📌${tag} <span class="tag-close" onclick="removeEditTag(${idx})">×</span></span>`).join('');
+    }
+    window.addEditTags = function() {
+        const input = document.getElementById('newTagInput');
+        const raw = input.value.trim();
+        if (!raw) return;
+        const tags = raw.split(/\s+/).filter(t => t.length >= 2 && t.length <= 5);
+        tags.forEach(tag => { if (!currentEditKeywords.includes(tag)) currentEditKeywords.push(tag); });
+        input.value = '';
+        renderEditTags();
+    };
+    window.removeEditTag = function(idx) { currentEditKeywords.splice(idx, 1); renderEditTags(); };
+
+    window.openEditModal = function(id) {
+        const r = resources.find(r=>r.id===id); if(!r) return;
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = r.name;
+        document.getElementById('editLink').value = r.link || '';
+        document.getElementById('editGrade').value = r.grade || '';
+        document.getElementById('editSubject').value = r.subject || '';
+        document.getElementById('editBrand').value = r.brand || '';
+        document.getElementById('editYear').value = r.year || '';
+        currentEditKeywords = r.keywords ? [...r.keywords] : [];
+        document.getElementById('newTagInput').value = '';
+        renderEditTags();
+        document.getElementById('editModal').style.display='flex';
+    };
+    window.closeEditModal = () => document.getElementById('editModal').style.display='none';
+    window.autoFillEditFields = function() {
+        const name = document.getElementById('editName').value.trim();
+        const link = document.getElementById('editLink').value.trim();
+        if (!name) return;
+        const ai = aiAnalyzeResource(name, link);
+        document.getElementById('editGrade').value = ai.grade;
+        document.getElementById('editSubject').value = ai.subject;
+        document.getElementById('editBrand').value = ai.brand;
+        document.getElementById('editYear').value = ai.year;
+        currentEditKeywords = ai.keywords || [];
+        document.getElementById('newTagInput').value = '';
+        renderEditTags();
+        showToast('🤖 AI已重新识别填充');
+    };
+    window.saveEditResource = function() {
+        const id = document.getElementById('editId').value;
+        const r = resources.find(r=>r.id===id); if(!r) return;
+        r.name = document.getElementById('editName').value.trim();
+        r.link = document.getElementById('editLink').value.trim();
+        r.grade = document.getElementById('editGrade').value.trim();
+        r.subject = document.getElementById('editSubject').value.trim();
+        r.brand = document.getElementById('editBrand').value.trim();
+        r.year = document.getElementById('editYear').value.trim();
+        r.driveType = (() => {
+            const link = r.link; if (!link) return '未知';
+            const l = link.toLowerCase();
+            if (l.includes('pan.baidu')) return '百度网盘';
+            if (l.includes('alipan')||l.includes('aliyundrive')) return '阿里云盘';
+            if (l.includes('quark.cn')) return '夸克网盘';
+            if (l.includes('123pan')) return '123云盘';
+            return '其他网盘';
+        })();
+        r.keywords = [...currentEditKeywords];
+        saveToLocalStorage(); closeEditModal(); renderAll();
+        showToast('💾 修改已保存','success');
+    };
+
+    // ==================== 删除、AI 操作 ====================
+    function showConfirm(msg, icon='⚠️') {
+        return new Promise(resolve => {
+            document.getElementById('confirmMessage').textContent = msg;
+            document.getElementById('confirmIcon').textContent = icon;
+            document.getElementById('confirmModal').style.display = 'flex';
+            const ok = document.getElementById('confirmOkBtn'), cancel = document.getElementById('confirmCancelBtn');
+            const handler = (result) => {
+                document.getElementById('confirmModal').style.display = 'none';
+                ok.removeEventListener('click', okHandler);
+                cancel.removeEventListener('click', cancelHandler);
+                resolve(result);
+            };
+            const okHandler = () => handler(true);
+            const cancelHandler = () => handler(false);
+            ok.addEventListener('click', okHandler);
+            cancel.addEventListener('click', cancelHandler);
+        });
+    }
+
+    window.deleteResource = async (id) => {
+        if (!(await showConfirm('确定删除该资料吗？', '🗑️'))) return;
+        resources = resources.filter(r=>r.id!==id);
+        saveToLocalStorage(); renderAll(); showToast('已删除','success');
+    };
+    window.runAIOnAll = async () => {
+        if (!(await showConfirm('将重新识别所有资料并替换现有标签，确认吗？', '🤖'))) return;
+        resources.forEach(r=>{ const ai=aiAnalyzeResource(r.name,r.link); Object.assign(r, ai); });
+        saveToLocalStorage(); renderAll(); showToast('AI全量识别完成，标签已重置','success');
+    };
+    window.reAnalyzeSingle = (id) => {
+        const r = resources.find(r=>r.id===id); if(!r) return;
+        Object.assign(r, aiAnalyzeResource(r.name, r.link));
+        saveToLocalStorage(); renderAll(); showToast('AI重识别成功','success');
+    };
+    window.copyLink = (link) => {
+        navigator.clipboard?.writeText(link).then(()=>showToast('已复制','success')).catch(()=>showToast('复制失败','error'));
+    };
+
+    // ==================== 导入解析 ====================
+    function parseImportLines(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+        const result = [];
+        let pendingName = null;
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            line = line.replace(/^[✅\s]+/, '');
+            if (!line) continue;
+            const bracketMatch = line.match(/^「(.+?)」/);
+            if (bracketMatch) {
+                let name = bracketMatch[1].trim();
+                let link = '';
+                const rest = line.substring(bracketMatch[0].length).trim();
+                if (rest.startsWith('链接：')) link = rest.substring(3).trim();
+                else if (rest.length > 0) name = name + ' ' + rest;
+                if (pendingName) { result.push({ name: pendingName, link: '' }); pendingName = null; }
+                if (link) result.push({ name, link });
+                else pendingName = name;
+                continue;
+            }
+            if (line.startsWith('链接：')) {
+                const link = line.substring(3).trim();
+                if (pendingName) { result.push({ name: pendingName, link }); pendingName = null; }
+                continue;
+            }
+            const linkIdx = line.indexOf('链接：');
+            if (linkIdx !== -1) {
+                const name = line.substring(0, linkIdx).trim();
+                const link = line.substring(linkIdx + 3).trim();
+                if (name) { if(pendingName){ result.push({name:pendingName,link:''}); pendingName=null; } result.push({name,link}); }
+                continue;
+            }
+            const seps = ['|',' - ',' – ','—','\t',',','，'];
+            let found = false;
+            for (let sep of seps) {
+                const idx = line.indexOf(sep);
+                if (idx > 0) {
+                    const name = line.substring(0, idx).trim();
+                    const link = line.substring(idx + sep.length).trim();
+                    if (name) { if(pendingName){result.push({name:pendingName,link:''}); pendingName=null;} result.push({name,link}); }
+                    found = true; break;
+                }
+            }
+            if (found) continue;
+            if (/^https?:\/\//i.test(line)) {
+                if (pendingName) { result.push({ name: pendingName, link: line }); pendingName = null; }
+                continue;
+            }
+            if (pendingName) { result.push({ name: pendingName, link: '' }); }
+            pendingName = line;
+        }
+        if (pendingName) result.push({ name: pendingName, link: '' });
+        return result;
+    }
+
+    window.executeBatchImport = function() {
+        const text = document.getElementById('batchImportText').value;
+        const items = parseImportLines(text);
+        if (!items.length) { showToast('未识别到有效数据','error'); return; }
+        items.forEach(item => {
+            const ai = aiAnalyzeResource(item.name, item.link);
+            resources.unshift({ id:generateId(), name:item.name, link:item.link, ...ai, createdAt:Date.now() });
+        });
+        saveToLocalStorage(); closeBatchImportModal(); renderAll(); showToast(`导入 ${items.length} 条`,'success');
+    };
+
+    window.openBatchImportModal = () => { document.getElementById('batchImportText').value = ''; document.getElementById('batchImportModal').style.display='flex'; };
+    window.closeBatchImportModal = () => document.getElementById('batchImportModal').style.display='none';
+    window.openAddSingleModal = () => { document.getElementById('singleName').value=''; document.getElementById('singleLink').value=''; document.getElementById('addSingleModal').style.display='flex'; };
+    window.closeAddSingleModal = () => document.getElementById('addSingleModal').style.display='none';
+    window.addSingleResource = () => {
+        const name = document.getElementById('singleName').value.trim();
+        if (!name) { showToast('请输入名称','error'); return; }
+        const link = document.getElementById('singleLink').value.trim();
+        const ai = aiAnalyzeResource(name, link);
+        resources.unshift({ id:generateId(), name, link, ...ai, createdAt:Date.now() });
+        saveToLocalStorage(); closeAddSingleModal(); renderAll(); showToast('添加成功','success');
+    };
+
+    function showToast(msg, type='') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div'); toast.className=`toast ${type}`; toast.textContent=msg;
+        container.appendChild(toast);
+        setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),300); },2500);
+    }
+
+    document.addEventListener('click', (e)=>{ if(e.target.id==='confirmModal') document.getElementById('confirmModal').style.display='none'; });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { document.getElementById('confirmModal').style.display='none'; document.getElementById('batchImportModal').style.display='none'; document.getElementById('addSingleModal').style.display='none'; document.getElementById('editModal').style.display='none'; } });
+
+    // ==================== 初始化 ====================
+    window.addEventListener('DOMContentLoaded', async () => {
+        await loadData();
+        renderAll();
+        // 检测是否支持 showSaveFilePicker
+        if (window.showSaveFilePicker) {
+            document.getElementById('btnSaveToFile').style.display = 'inline-flex';
+        }
+    });
+})();
+</script>
+</body>
+</html>
