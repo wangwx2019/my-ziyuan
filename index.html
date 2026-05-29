@@ -238,7 +238,7 @@
     // ==================== 数据加载（优先 data.json） ====================
     async function loadData() {
         try {
-            const response = await fetch('data.json');
+            const response = await fetch('data.json?t=' + Date.now());
             if (response.ok) {
                 const data = await response.json();
                 if (Array.isArray(data) && data.length > 0) {
