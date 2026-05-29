@@ -241,8 +241,14 @@
             const response = await fetch('data.json?t=' + Date.now());
             if (response.ok) {
                 const data = await response.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    resources = data.map(r => ({ ...r, createdAt: r.createdAt || Date.now() }));
+                let importData = null;
+                if (Array.isArray(data)) {
+                    importData = data;
+                } else if (data && data.resources && Array.isArray(data.resources)) {
+                    importData = data.resources;
+                }
+                if (importData && importData.length > 0) {
+                    resources = importData.map(r => ({ ...r, createdAt: r.createdAt || Date.now() }));
                     console.log('✅ 已从 data.json 加载 ' + resources.length + ' 条资料');
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(resources));
                     return;
