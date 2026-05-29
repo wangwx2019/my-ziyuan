@@ -882,11 +882,7 @@
         if (btn) { btn.textContent = '⏳ 同步中...'; btn.disabled = true; }
 
         try {
-            const data = JSON.stringify({
-                resources: resources,
-                updatedAt: new Date().toISOString(),
-                totalCount: resources.length
-            }, null, 2);
+            const data = JSON.stringify(resources, null, 2);
 
             const fileName = 'data.json';
 
