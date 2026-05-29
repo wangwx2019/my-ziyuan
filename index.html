@@ -814,6 +814,32 @@
         });
     };
 
+    // 每条资料卡片的操作：先密码，再执行
+    const _origOpenEditModal = window.openEditModal;
+    window.openEditModal = function(id) {
+        openPasswordModal(() => {
+            _origOpenEditModal(id);
+        });
+    };
+    const _origCopyLink = window.copyLink;
+    window.copyLink = function(link) {
+        openPasswordModal(() => {
+            _origCopyLink(link);
+        });
+    };
+    const _origReAnalyzeSingle = window.reAnalyzeSingle;
+    window.reAnalyzeSingle = function(id) {
+        openPasswordModal(() => {
+            _origReAnalyzeSingle(id);
+        });
+    };
+    const _origDeleteResource = window.deleteResource;
+    window.deleteResource = async function(id) {
+        openPasswordModal(async () => {
+            await _origDeleteResource(id);
+        });
+    };
+
     // ==================== GitHub 同步 ====================
     const GITHUB_REPO = 'wangwx2019/my-ziyuan';
 
