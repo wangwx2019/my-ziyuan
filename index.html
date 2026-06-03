@@ -747,10 +747,16 @@
     document.addEventListener('click', (e)=>{ if(e.target.id==='confirmModal') document.getElementById('confirmModal').style.display='none'; if(!e.target.closest('.navbar') && document.getElementById('navDropdown').classList.contains('active')) closeNavMenu(); });
     document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { document.getElementById('confirmModal').style.display='none'; document.getElementById('batchImportModal').style.display='none'; document.getElementById('addSingleModal').style.display='none'; document.getElementById('editModal').style.display='none'; document.getElementById('passwordModal').style.display='none'; document.getElementById('githubModal').style.display='none'; closeFilter(); closeNavMenu(); } });
 
-    // ==================== 管理员密码验证 ====================
+    // ==================== 管理员密码验证（会话内仅需输入一次） ====================
     let _passwordCallback = null;
+    let _sessionUnlocked = false;
 
     window.openPasswordModal = function(onSuccess) {
+        // 已解锁当前会话，直接放行，不再弹窗
+        if (_sessionUnlocked) {
+            if (typeof onSuccess === 'function') onSuccess();
+            return;
+        }
         _passwordCallback = onSuccess;
         document.getElementById('passwordInput').value = '';
         document.getElementById('passwordError').style.display = 'none';
@@ -764,6 +770,7 @@
     window.submitPassword = function() {
         const pwd = document.getElementById('passwordInput').value;
         if (pwd === '9921') {
+            _sessionUnlocked = true; // 当前会话已解锁，不再弹窗
             document.getElementById('passwordModal').style.display = 'none';
             const cb = _passwordCallback;
             _passwordCallback = null;
