@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>📚 教育资源资料库</title>
+    <!-- PWA 支持 -->
+    <link rel="manifest" href="manifest-ziyuan.json">
+    <meta name="theme-color" content="#4f6ef7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="教育资源库">
     <style>
         :root {
             --bg: #f0f4f8; --card-bg: #ffffff; --primary: #4f6ef7; --primary-hover: #3b54d4;
@@ -112,6 +118,35 @@
             .search-box .search-icon { left:9px; font-size:0.82rem; }
             .sort-select { padding:6px 24px 6px 10px; font-size:0.75rem; }
         }
+        
+        /* 深色模式 */
+        @media (prefers-color-scheme: dark) {
+            :root { --bg: #0f172a; --card-bg: #1e293b; --text: #e2e8f0; --text-secondary: #94a3b8; --border: #334155; }
+            body { background: #0f172a; color: #e2e8f0; }
+            .navbar { background: #1e293b; border-color: #334155; }
+            .navbar-brand { color: #818cf8; }
+            .filter-card, .resource-card, .modal { background: #1e293b; border-color: #334155; }
+            .filter-tag { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+            .filter-tag.active { background: #4f6ef7; }
+            .search-box input, .sort-select { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+            .btn-outline { background: #1e293b; border-color: #475569; color: #e2e8f0; }
+            .nav-dropdown { background: #1e293b; border-color: #334155; }
+            .nav-dropdown button { color: #e2e8f0; }
+            .nav-dropdown button:hover { background: #334155; }
+            .card-title a { color: #818cf8; }
+            .toast { background: #e2e8f0; color: #0f172a; }
+            .filter-overlay { background: rgba(0,0,0,0.6); }
+            .filter-panel { background: #1e293b; }
+            .badge-grade { background: #78350f; color: #fef3c7; }
+            .badge-subject { background: #064e3b; color: #d1fae5; }
+            .badge-brand { background: #4c1d95; color: #ede9fe; }
+            .badge-year { background: #1e3a5f; color: #dbeafe; }
+            .badge-drive { background: #831843; color: #fce7f3; }
+            .github-modal, .password-modal { background: #1e293b; }
+        }
+        
+        /* PWA 支持 */
+        .toast { transition: all 0.3s ease; }
     </style>
 </head>
 <body>
@@ -179,10 +214,10 @@
     </main>
 </div>
 
-<div class="modal-overlay" id="batchImportModal" style="display:none;"><div class="modal"><h3>📥 批量导入资料</h3><textarea id="batchImportText" style="width:100%;height:160px;border-radius:12px;border:2px solid #e2e8f0;padding:12px;" placeholder="支持格式：名称|链接 或 一行名称一行链接 或「名称」+链接：..."></textarea><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeBatchImportModal()">取消</button><button class="btn btn-primary" onclick="executeBatchImport()">✅ 导入并保存</button></div></div></div>
-<div class="modal-overlay" id="addSingleModal" style="display:none;"><div class="modal"><h3>➕ 添加资料</h3><input type="text" id="singleName" placeholder="资料名称" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><input type="text" id="singleLink" placeholder="链接（可选）" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;"><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeAddSingleModal()">取消</button><button class="btn btn-primary" onclick="addSingleResource()">✅ 添加</button></div></div></div>
-<div class="modal-overlay" id="editModal" style="display:none;"><div class="modal"><h3>✏️ 编辑资料</h3><input type="hidden" id="editId"><input type="text" id="editName" placeholder="资料名称" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><input type="text" id="editLink" placeholder="链接" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="editGrade" placeholder="年级" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editSubject" placeholder="科目" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editBrand" placeholder="版本" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editYear" placeholder="年份" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"></div><div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:#64748b;font-weight:600;">🏷️ 标签管理</label><div id="editTagsContainer" class="tag-editor"></div><div style="display:flex;gap:6px;"><input type="text" id="newTagInput" placeholder="输入标签，空格可添加多个" style="flex:1;padding:6px 10px;border-radius:20px;border:1.5px solid #e2e8f0;font-size:0.75rem;"><button class="btn btn-sm btn-outline" onclick="addEditTags()" style="padding:4px 12px;">➕ 添加</button></div></div><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeEditModal()">取消</button><button class="btn btn-outline" onclick="autoFillEditFields()">🤖 AI重新识别填充</button><button class="btn btn-primary" onclick="saveEditResource()">💾 保存修改</button></div></div></div>
-<div class="modal-overlay" id="confirmModal" style="display:none;"><div class="modal confirm-modal"><div class="confirm-icon" id="confirmIcon">⚠️</div><p id="confirmMessage"></p><div class="modal-actions-row"><button class="btn btn-outline" id="confirmCancelBtn">取消</button><button class="btn btn-primary" id="confirmOkBtn">确认</button></div></div></div>
+<div class="modal-overlay" id="batchImportModal" style="display:none;" role="dialog" aria-modal="true" aria-label="批量导入"><div class="modal"><h3>📥 批量导入资料</h3><textarea id="batchImportText" style="width:100%;height:160px;border-radius:12px;border:2px solid #e2e8f0;padding:12px;" placeholder="支持格式：名称|链接 或 一行名称一行链接 或「名称」+链接：..."></textarea><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeBatchImportModal()">取消</button><button class="btn btn-primary" onclick="executeBatchImport()">✅ 导入并保存</button></div></div></div>
+<div class="modal-overlay" id="addSingleModal" style="display:none;" role="dialog" aria-modal="true" aria-label="添加资料"><div class="modal"><h3>➕ 添加资料</h3><input type="text" id="singleName" placeholder="资料名称" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><input type="text" id="singleLink" placeholder="链接（可选）" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;"><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeAddSingleModal()">取消</button><button class="btn btn-primary" onclick="addSingleResource()">✅ 添加</button></div></div></div>
+<div class="modal-overlay" id="editModal" style="display:none;" role="dialog" aria-modal="true" aria-label="编辑资料"><div class="modal"><h3>✏️ 编辑资料</h3><input type="hidden" id="editId"><input type="text" id="editName" placeholder="资料名称" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><input type="text" id="editLink" placeholder="链接" style="width:100%;padding:10px;border-radius:25px;border:2px solid #e2e8f0;margin-bottom:8px;"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="editGrade" placeholder="年级" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editSubject" placeholder="科目" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editBrand" placeholder="版本" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"><input type="text" id="editYear" placeholder="年份" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #e2e8f0;"></div><div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:#64748b;font-weight:600;">🏷️ 标签管理</label><div id="editTagsContainer" class="tag-editor"></div><div style="display:flex;gap:6px;"><input type="text" id="newTagInput" placeholder="输入标签，空格可添加多个" style="flex:1;padding:6px 10px;border-radius:20px;border:1.5px solid #e2e8f0;font-size:0.75rem;"><button class="btn btn-sm btn-outline" onclick="addEditTags()" style="padding:4px 12px;">➕ 添加</button></div></div><div class="modal-actions-row"><button class="btn btn-outline" onclick="closeEditModal()">取消</button><button class="btn btn-outline" onclick="autoFillEditFields()">🤖 AI重新识别填充</button><button class="btn btn-primary" onclick="saveEditResource()">💾 保存修改</button></div></div></div>
+<div class="modal-overlay" id="confirmModal" style="display:none;" role="alertdialog" aria-modal="true" aria-label="确认操作"><div class="modal confirm-modal"><div class="confirm-icon" id="confirmIcon">⚠️</div><p id="confirmMessage"></p><div class="modal-actions-row"><button class="btn btn-outline" id="confirmCancelBtn">取消</button><button class="btn btn-primary" id="confirmOkBtn">确认</button></div></div></div>
 
 <!-- 管理员密码验证弹窗 -->
 <div class="modal-overlay" id="passwordModal" style="display:none;" onclick="if(event.target===this)closePasswordModal()">
@@ -199,13 +234,13 @@
 </div>
 
 <!-- GitHub 设置弹窗 -->
-<div class="modal-overlay" id="githubModal" style="display:none;" onclick="if(event.target===this)closeGitHubModal()">
+<div class="modal-overlay" id="githubModal" style="display:none;" onclick="if(event.target===this)closeGitHubModal()" role="dialog" aria-modal="true" aria-label="GitHub同步设置">
     <div class="modal" style="max-width:440px;">
         <h3>☁️ GitHub 同步设置</h3>
         <p style="color:#64748b;margin:0 0 14px 0;font-size:0.85rem;">Token 仅保存在本地浏览器中，不会上传到其他服务器</p>
         <div style="background:#f8fafc;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:0.82rem;">
             <span style="color:#64748b;font-weight:600;">仓库：</span>
-            <span style="color:#1e293b;">wangwx2019/my-ziyuan</span>
+            <span style="color:#1e293b;">***an</span>
         </div>
         <label style="font-size:0.78rem;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">GitHub Token</label>
         <input type="password" id="githubTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="width:100%;padding:10px 14px;border-radius:25px;border:2px solid #e2e8f0;font-size:0.85rem;outline:none;margin-bottom:4px;">
@@ -221,6 +256,16 @@
 <div id="toastContainer"></div>
 <script>
 (function() {
+    // 触觉反馈
+    function hapticFeedback(type) {
+        if (!navigator.vibrate) return;
+        switch(type) {
+            case 'success': navigator.vibrate(50); break;
+            case 'warning': navigator.vibrate([30, 20, 30]); break;
+            default: navigator.vibrate(25);
+        }
+    }
+    
     const STORAGE_KEY = 'edu_resources_db';
     let resources = [];
     let activeFilters = { grade: null, subject: null, brand: null, year: null, driveType: null };
@@ -525,10 +570,21 @@
         renderAll();
         showToast(`已删除标签“${keyword}”`, 'success');
     };
+    // 分页配置
+    const PAGE_SIZE = 50;
+    let currentPage = 1;
+    
     function renderResourceList() {
         const list = document.getElementById('resourceList'), filtered = getFilteredAndSortedResources();
         if(!filtered.length) { list.innerHTML = `<div class="empty-state"><p>📭 暂无匹配资料</p></div>`; return; }
-        list.innerHTML = filtered.map(r => {
+        
+        // 分页
+        const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+        if (currentPage > totalPages) currentPage = totalPages;
+        const startIdx = (currentPage - 1) * PAGE_SIZE;
+        const pageData = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+        
+        list.innerHTML = pageData.map(r => {
             const gradeBadge = r.grade ? `<span class="badge badge-grade">🎓 ${r.grade}</span>` : '';
             const kwBadges = r.keywords.map(k => `<span class="badge badge-knowledge" data-kw="${k}">📌${k}<span class="kw-close" onclick="event.stopPropagation(); deleteKeyword('${r.id}', '${k.replace(/'/g,"\\'")}')">×</span></span>`).join('');
             return `<div class="resource-card">
@@ -543,7 +599,17 @@
                     <button class="btn-delete" onclick="deleteResource('${r.id}')">🗑️</button>
                 </div></div>`;
         }).join('');
+        
+        // 分页导航
+        if (totalPages > 1) {
+            list.innerHTML += `<div style="display:flex;justify-content:center;align-items:center;gap:8px;padding:16px 0;">
+                <button class="btn btn-outline" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled style="opacity:0.5"' : ''}>‹ 上一页</button>
+                <span style="font-size:0.82rem;color:#64748b;">${currentPage} / ${totalPages}（共 ${filtered.length} 条）</span>
+                <button class="btn btn-outline" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled style="opacity:0.5"' : ''}>下一页 ›</button>
+            </div>`;
+        }
     }
+    window.goToPage = (page) => { currentPage = page; renderResourceList(); window.scrollTo(0, 0); };
     function updateStats() {
         document.getElementById('statTotal').textContent = `📦 ${resources.length}`;
         document.getElementById('statFiltered').textContent = `🔍 ${getFilteredAndSortedResources().length}`;
@@ -552,7 +618,15 @@
 
     window.setFilter = (key,val)=>{ activeFilters[key] = val || null; renderAll(); };
     window.resetAllFilters = ()=>{ activeFilters={grade:null,subject:null,brand:null,year:null,driveType:null}; searchQuery=''; document.getElementById('searchInput').value=''; document.getElementById('sortSelect').value='newest'; currentSort='newest'; renderAll(); };
-    window.onSearch = ()=>{ searchQuery = document.getElementById('searchInput').value; renderAll(); };
+    // 搜索防抖
+    let _searchDebounce = null;
+    window.onSearch = ()=>{
+        clearTimeout(_searchDebounce);
+        _searchDebounce = setTimeout(()=>{
+            searchQuery = document.getElementById('searchInput').value;
+            renderAll();
+        }, 300);
+    };
     window.onSort = ()=>{ currentSort = document.getElementById('sortSelect').value; renderAll(); };
 
     // ==================== 移动端筛选浮层 ====================
@@ -649,10 +723,40 @@
         });
     }
 
+    // 撤销功能
+    let lastDeletedResource = null;
+    let undoToast = null;
+    function showUndoToast(message, callback) {
+        if (!undoToast) {
+            undoToast = document.createElement('div');
+            undoToast.className = 'toast';
+            undoToast.style.cssText = 'position:fixed;bottom:80px;right:24px;background:#1e293b;color:#fff;padding:10px 18px;border-radius:25px;font-size:0.82rem;z-index:300;display:flex;align-items:center;gap:10px;';
+            undoToast.innerHTML = '<span id="undoToastMsg"></span><button id="undoToastBtn" style="background:#4f6ef7;color:#fff;border:none;border-radius:14px;padding:6px 14px;font-weight:600;cursor:pointer;">撤销</button>';
+            document.body.appendChild(undoToast);
+            document.getElementById('undoToastBtn').addEventListener('click', () => {
+                if (lastDeletedResource) {
+                    resources.push(lastDeletedResource);
+                    saveToLocalStorage();
+                    renderAll();
+                    lastDeletedResource = null;
+                    showToast('已撤销删除', 'success');
+                }
+                undoToast.style.display = 'none';
+            });
+        }
+        document.getElementById('undoToastMsg').textContent = message;
+        undoToast.style.display = 'flex';
+        clearTimeout(undoToast._timer);
+        undoToast._timer = setTimeout(() => { undoToast.style.display = 'none'; lastDeletedResource = null; }, 4000);
+    }
+    
     window.deleteResource = async (id) => {
         if (!(await showConfirm('确定删除该资料吗？', '🗑️'))) return;
+        const deleted = resources.find(r => r.id === id);
         resources = resources.filter(r=>r.id!==id);
-        saveToLocalStorage(); renderAll(); showToast('已删除','success');
+        saveToLocalStorage(); renderAll();
+        lastDeletedResource = deleted;
+        showUndoToast('已删除: ' + (deleted?.name || '').substring(0, 20));
     };
     window.runAIOnAll = async () => {
         if (!(await showConfirm('将重新识别所有资料并替换现有标签，确认吗？', '🤖'))) return;
@@ -724,13 +828,92 @@
         return result;
     }
 
-    window.openBatchImportModal = () => { document.getElementById('batchImportText').value = ''; document.getElementById('batchImportModal').style.display='flex'; };
-    window.closeBatchImportModal = () => document.getElementById('batchImportModal').style.display='none';
-    window.openAddSingleModal = () => { document.getElementById('singleName').value=''; document.getElementById('singleLink').value=''; document.getElementById('addSingleModal').style.display='flex'; };
-    window.closeAddSingleModal = () => document.getElementById('addSingleModal').style.display='none';
-    window.addSingleResource = () => {
+    // 焦点管理
+    let lastFocusedElement = null;
+    function focusFirstInModal(modal) {
+        lastFocusedElement = document.activeElement;
+        setTimeout(() => {
+            const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable) focusable.focus();
+        }, 100);
+    }
+    function closeModalWithFocus(modal) {
+        modal.style.display = 'none';
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+    function trapFocus(e, modal) {
+        const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    }
+    
+    window.openBatchImportModal = () => { 
+        document.getElementById('batchImportText').value = ''; 
+        document.getElementById('batchImportModal').style.display='flex';
+        focusFirstInModal(document.getElementById('batchImportModal'));
+    };
+    window.closeBatchImportModal = () => closeModalWithFocus(document.getElementById('batchImportModal'));
+    window.openAddSingleModal = () => { 
+        document.getElementById('singleName').value=''; 
+        document.getElementById('singleLink').value=''; 
+        document.getElementById('addSingleModal').style.display='flex';
+        focusFirstInModal(document.getElementById('addSingleModal'));
+    };
+    window.closeAddSingleModal = () => closeModalWithFocus(document.getElementById('addSingleModal'));
+    // ==================== 去重检查 ====================
+    function checkDuplicate(name, excludeId = null) {
+        const trimmedName = name.trim().toLowerCase();
+        return resources.find(r => 
+            r.name.trim().toLowerCase() === trimmedName && 
+            r.id !== excludeId
+        );
+    }
+
+    function showDuplicateConfirm(newName, existingResource) {
+        return new Promise(resolve => {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmIcon').textContent = '⚠️';
+            document.getElementById('confirmMessage').innerHTML = 
+                `检测到重复资源！<br><br>` +
+                `<span style="color:#64748b;font-size:0.85rem;">新名称：</span><b>${escapeHtml(newName)}</b><br>` +
+                `<span style="color:#64748b;font-size:0.85rem;">已有：</span><b>${escapeHtml(existingResource.name)}</b>`;
+            document.getElementById('confirmOkBtn').textContent = '✏️ 去编辑';
+            document.getElementById('confirmCancelBtn').textContent = '✅ 仍要添加';
+            modal.style.display = 'flex';
+            
+            const ok = document.getElementById('confirmOkBtn');
+            const cancel = document.getElementById('confirmCancelBtn');
+            
+            const cleanup = () => {
+                modal.style.display = 'none';
+                ok.removeEventListener('click', okHandler);
+                cancel.removeEventListener('click', cancelHandler);
+            };
+            const okHandler = () => { cleanup(); resolve('edit'); };
+            const cancelHandler = () => { cleanup(); resolve('add'); };
+            ok.addEventListener('click', okHandler);
+            cancel.addEventListener('click', cancelHandler);
+        });
+    }
+
+    window.addSingleResource = async () => {
         const name = document.getElementById('singleName').value.trim();
         if (!name) { showToast('请输入名称','error'); return; }
+        
+        const existing = checkDuplicate(name);
+        if (existing) {
+            const action = await showDuplicateConfirm(name, existing);
+            if (action === 'edit') {
+                closeAddSingleModal();
+                setTimeout(() => openEditModal(existing.id), 200);
+                return;
+            }
+        }
+        
         const link = document.getElementById('singleLink').value.trim();
         const ai = aiAnalyzeResource(name, link);
         resources.unshift({ id:generateId(), name, link, ...ai, createdAt:Date.now() });
@@ -741,11 +924,38 @@
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div'); toast.className=`toast ${type}`; toast.textContent=msg;
         container.appendChild(toast);
+        // 触觉反馈
+        if (type === 'success') hapticFeedback('success');
+        else if (type === 'error') hapticFeedback('warning');
         setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),300); },2500);
     }
 
     document.addEventListener('click', (e)=>{ if(e.target.id==='confirmModal') document.getElementById('confirmModal').style.display='none'; if(!e.target.closest('.navbar') && document.getElementById('navDropdown').classList.contains('active')) closeNavMenu(); });
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { document.getElementById('confirmModal').style.display='none'; document.getElementById('batchImportModal').style.display='none'; document.getElementById('addSingleModal').style.display='none'; document.getElementById('editModal').style.display='none'; document.getElementById('passwordModal').style.display='none'; document.getElementById('githubModal').style.display='none'; closeFilter(); closeNavMenu(); } });
+    document.addEventListener('keydown', (e)=>{
+        // ESC 关闭弹窗
+        if(e.key==='Escape') { 
+            document.getElementById('confirmModal').style.display='none'; 
+            document.getElementById('batchImportModal').style.display='none'; 
+            document.getElementById('addSingleModal').style.display='none'; 
+            document.getElementById('editModal').style.display='none'; 
+            document.getElementById('passwordModal').style.display='none'; 
+            document.getElementById('githubModal').style.display='none'; 
+            closeFilter(); 
+            closeNavMenu(); 
+        }
+        // Tab 键焦点陷阱
+        const openModals = document.querySelectorAll('.modal-overlay[style*="flex"]');
+        openModals.forEach(modal => { if (e.key === 'Tab') trapFocus(e, modal); });
+        // Ctrl+Z 撤销
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && lastDeletedResource) {
+            resources.push(lastDeletedResource);
+            saveToLocalStorage();
+            renderAll();
+            lastDeletedResource = null;
+            showToast('已撤销删除', 'success');
+            if (undoToast) undoToast.style.display = 'none';
+        }
+    });
 
     // ==================== 管理员密码验证（会话内仅需输入一次） ====================
     let _passwordCallback = null;
@@ -792,15 +1002,77 @@
         });
     };
     // executeBatchImport 已由 openBatchImportModal 入口保护，恢复为无密码版本
-    window.executeBatchImport = function() {
+    window.executeBatchImport = async function() {
         const text = document.getElementById('batchImportText').value;
         const items = parseImportLines(text);
         if (!items.length) { showToast('未识别到有效数据','error'); return; }
+        
+        // 检查重复
+        const duplicates = [];
+        const uniqueItems = [];
+        
         items.forEach(item => {
-            const ai = aiAnalyzeResource(item.name, item.link);
-            resources.unshift({ id:generateId(), name:item.name, link:item.link, ...ai, createdAt:Date.now() });
+            const existing = checkDuplicate(item.name);
+            if (existing) {
+                duplicates.push({ name: item.name, existing: existing.name });
+            } else {
+                uniqueItems.push(item);
+            }
         });
-        saveToLocalStorage(); closeBatchImportModal(); renderAll(); showToast(`导入 ${items.length} 条`,'success');
+        
+        // 如果有重复，弹窗询问
+        if (duplicates.length > 0) {
+            const dupList = duplicates.map(d => `• ${d.name}`).join('<br>');
+            const confirmed = await new Promise(resolve => {
+                const modal = document.getElementById('confirmModal');
+                document.getElementById('confirmIcon').textContent = '⚠️';
+                document.getElementById('confirmMessage').innerHTML = 
+                    `发现 ${duplicates.length} 个重复资源：` +
+                    `<div style="max-height:120px;overflow-y:auto;margin:10px 0;padding:8px;background:#f8fafc;border-radius:8px;font-size:0.82rem;text-align:left;">${dupList}</div>` +
+                    `<span style="color:#64748b;font-size:0.82rem;">跳过重复项，仅导入 ${uniqueItems.length} 个新资源？</span>`;
+                document.getElementById('confirmOkBtn').textContent = `✅ 跳过重复 (${uniqueItems.length})`;
+                document.getElementById('confirmCancelBtn').textContent = '📋 全部导入';
+                modal.style.display = 'flex';
+                
+                const ok = document.getElementById('confirmOkBtn');
+                const cancel = document.getElementById('confirmCancelBtn');
+                const cleanup = () => {
+                    modal.style.display = 'none';
+                    ok.removeEventListener('click', okHandler);
+                    cancel.removeEventListener('click', cancelHandler);
+                };
+                const okHandler = () => { cleanup(); resolve(true); };
+                const cancelHandler = () => { cleanup(); resolve(false); };
+                ok.addEventListener('click', okHandler);
+                cancel.addEventListener('click', cancelHandler);
+            });
+            
+            if (confirmed) {
+                // 只导入不重复的
+                uniqueItems.forEach(item => {
+                    const ai = aiAnalyzeResource(item.name, item.link);
+                    resources.unshift({ id:generateId(), name:item.name, link:item.link, ...ai, createdAt:Date.now() });
+                });
+                saveToLocalStorage(); closeBatchImportModal(); renderAll(); 
+                showToast(`已导入 ${uniqueItems.length} 条（跳过 ${duplicates.length} 条重复）`,'success');
+            } else {
+                // 全部导入
+                items.forEach(item => {
+                    const ai = aiAnalyzeResource(item.name, item.link);
+                    resources.unshift({ id:generateId(), name:item.name, link:item.link, ...ai, createdAt:Date.now() });
+                });
+                saveToLocalStorage(); closeBatchImportModal(); renderAll(); 
+                showToast(`全部导入 ${items.length} 条`,'success');
+            }
+        } else {
+            // 无重复，直接导入
+            items.forEach(item => {
+                const ai = aiAnalyzeResource(item.name, item.link);
+                resources.unshift({ id:generateId(), name:item.name, link:item.link, ...ai, createdAt:Date.now() });
+            });
+            saveToLocalStorage(); closeBatchImportModal(); renderAll(); 
+            showToast(`导入 ${items.length} 条`,'success');
+        }
     };
 
     // 添加单个：先密码，再开弹窗
@@ -895,7 +1167,8 @@
         if (btn) { btn.textContent = '⏳ 同步中...'; btn.disabled = true; }
 
         try {
-            const data = JSON.stringify(resources, null, 2);
+            // 压缩 JSON（去掉缩进）
+            const data = JSON.stringify(resources);
 
             const fileName = 'data.json';
 
@@ -912,14 +1185,8 @@
                 sha = existing.sha;
             }
 
-            // Base64 编码（支持中文）
-            const encoder = new TextEncoder();
-            const bytes = encoder.encode(data);
-            let binaryStr = '';
-            for (let i = 0; i < bytes.length; i++) {
-                binaryStr += String.fromCharCode(bytes[i]);
-            }
-            const content = btoa(binaryStr);
+            // 高效 Base64 编码
+            const content = btoa(unescape(encodeURIComponent(data)));
 
             const body = {
                 message: '📚 教育资源数据同步更新 - ' + new Date().toLocaleString('zh-CN'),
@@ -991,8 +1258,20 @@
             } else {
                 throw new Error('文件格式无效：未找到资料数据');
             }
-
-            resources = importData;
+            
+            // 数据校验：过滤无效条目
+            const validData = importData.filter(item => {
+                if (!item || typeof item !== 'object') return false;
+                if (!item.name || typeof item.name !== 'string') return false;
+                if (!item.id) item.id = Date.now() + Math.random() + '';
+                return true;
+            });
+            
+            if (validData.length === 0) {
+                throw new Error('文件中没有有效的资料数据');
+            }
+            
+            resources = validData;
             saveToLocalStorage();
             renderAll();
             showToast(`✅ 从文件导入成功（${resources.length} 条）`, 'success');
